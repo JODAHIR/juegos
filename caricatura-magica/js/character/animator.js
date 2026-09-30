@@ -1,0 +1,1 @@
+const moves=['jump','dance','hello','spin','bounce']; export function animate(el,name){if(!el||el.hidden)return;moves.forEach(m=>el.classList.remove(m));void el.offsetWidth;el.classList.add(name);el.addEventListener('animationend',()=>el.classList.remove(name),{once:true})} export function randomMove(){return moves[Math.floor(Math.random()*moves.length)]}
