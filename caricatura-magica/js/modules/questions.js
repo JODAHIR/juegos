@@ -3,10 +3,10 @@ const words=[
 let mathHistory=[],readingHistory=[];
 const rnd=(a,b)=>Math.floor(Math.random()*(b-a+1))+a,shuffle=a=>[...a].sort(()=>Math.random()-.5);
 function choices(answer){let s=new Set([answer]);while(s.size<3){let d=rnd(1,Math.max(5,Math.round(answer*.15)+2));let v=Math.max(0,answer+(Math.random()<.5?-d:d));s.add(v)}return shuffle([...s].map(String))}
-export function nextMath(){
- let q,key,tries=0;do{const da=rnd(1,3),db=rnd(1,3),minA=da===1?1:10**(da-1),maxA=10**da-1,minB=db===1?1:10**(db-1),maxB=10**db-1;let a=rnd(minA,maxA),b=rnd(minB,maxB),op=Math.random()<.5?"+":"-";if(op==="-"&&b>a)[a,b]=[b,a];const ans=op==="+"?a+b:a-b;key=a+op+b;q={q:`${a} ${op} ${b} = ?`,options:choices(ans),answer:String(ans),speech:`¿Cuánto es ${a} ${op==="+"?"más":"menos"} ${b}?`}}while(mathHistory.includes(key)&&++tries<30);mathHistory.push(key);if(mathHistory.length>40)mathHistory.shift();return q}
-export function nextReading(){
- let q,key,tries=0;do{const w=words[rnd(0,words.length-1)],type=rnd(0,3);
+export function nextMath(level=1){
+ let q,key,tries=0;do{const maxDigits=level>=5?3:level>=3?2:1,da=rnd(1,maxDigits),db=rnd(1,maxDigits),minA=da===1?1:10**(da-1),maxA=10**da-1,minB=db===1?1:10**(db-1),maxB=10**db-1;let a=rnd(minA,maxA),b=rnd(minB,maxB),op=level===1?"+":Math.random()<.5?"+":"-";if(op==="-"&&b>a)[a,b]=[b,a];const ans=op==="+"?a+b:a-b;key=a+op+b;q={q:`${a} ${op} ${b} = ?`,options:choices(ans),answer:String(ans),speech:`¿Cuánto es ${a} ${op==="+"?"más":"menos"} ${b}?`}}while(mathHistory.includes(key)&&++tries<30);mathHistory.push(key);if(mathHistory.length>40)mathHistory.shift();return q}
+export function nextReading(level=1){
+ let q,key,tries=0;do{const w=words[rnd(0,words.length-1)],maxType=level>=5?3:level>=3?2:level>=2?1:0,type=rnd(0,maxType);
  if(type===0){const pos=rnd(0,w.word.length-1),missing=w.word[pos];key="complete-"+w.word+"-"+pos;let opts=new Set([missing]);const letters="ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";while(opts.size<3)opts.add(letters[rnd(0,letters.length-1)]);q={q:`${w.emoji} ${w.word.slice(0,pos)}_${w.word.slice(pos+1)}`,options:shuffle([...opts]),answer:missing,speech:`Completa la palabra ${w.word}`}}
  else if(type===1){key="syllable-"+w.word;const correct=w.syllables.join(" · ");let distract=[shuffle(w.syllables).join(" · "),[...w.syllables].reverse().join(" · ")];q={q:`${w.emoji} Ordena: ${shuffle(w.syllables).join(" - ")}`,options:shuffle([correct,...distract]).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3),answer:correct,speech:`Ordena las sílabas para formar ${w.word}`};if(!q.options.includes(correct))q.options[0]=correct}
  else if(type===2){key="recognize-"+w.word;let others=shuffle(words.filter(x=>x.word!==w.word)).slice(0,2).map(x=>x.word);q={q:`${w.emoji} ¿Qué palabra corresponde a la imagen?`,options:shuffle([w.word,...others]),answer:w.word,speech:"¿Qué palabra corresponde a la imagen?"}}
